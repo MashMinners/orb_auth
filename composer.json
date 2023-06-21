@@ -1,0 +1,17 @@
+{
+    "name": "f16inkin/orb-auth",
+    "type": "project",
+    "description": "Authorization, authentication and identification service for ORB micro framework",
+    "keywords": [],
+    "license": "GPL-3.0-only",
+    "autoload": {
+        "psr-4": {
+            "ORB\\Authentication\\": "src/Authentication",
+            "ORB\\Authorization\\": "src/Authorization",
+            "ORB\\Identication\\": "src/Identification"
+        }
+    },
+    "require": {
+        "f16inkin/orb-engine": "^1.0.0"
+    }
+}
