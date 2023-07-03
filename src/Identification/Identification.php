@@ -14,15 +14,13 @@ class Identification
         $this->_db = $connector::connect();
     }
 
-    public function identify(string $userName) {
-        $query = ("");
+    public function identify(string $accountName) : array|false {
+        $query = ("SELECT * FROM user_accounts WHERE account_name = :accountName");
         $stmt = $this->_db->prepare($query);
-        $stmt->execute(['userName' => $userName]);
+        $stmt->execute(['accountName' => $accountName]);
         if ($stmt->rowCount() > 0) {
             return $stmt->fetch();
         }
         return false;
     }
-
-
 }
