@@ -6,5 +6,8 @@ namespace ORB\RBAC\Entities;
 
 class Permission
 {
+    private string $id;
+    private string $name;
+    private array $rules;
 
 }

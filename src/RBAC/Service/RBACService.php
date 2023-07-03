@@ -19,7 +19,7 @@ class RBACService
      * То используя эту фонкцию напрямую можно сэкономить время и ресурсы не подтягивая роли
      * @return void
      */
-    public function hasPermisiion() {
+    public function hasPermission() { //можно переименовать в can, для лучшей читаемости, либо сделать алиас
 
     }
 
