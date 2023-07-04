@@ -4,29 +4,13 @@ declare(strict_types=1);
 
 namespace ORB\RBAC;
 
-class Repository
+class PermissionsRepository
 {
-    public function getRolesByUser(string $uuid) {
-
-    }
-
     public function getPermissionsByRoleId(string $uuid) {
 
     }
 
     public function getAllPermisiions() {
-
-    }
-
-    public function getAllRoles() {
-
-    }
-
-    public function getRoleById(string $uuid) {
-
-    }
-
-    public function getRoleByName(string $name) {
 
     }
 
@@ -38,17 +22,12 @@ class Repository
 
     }
 
-    public function assignRoleToUser() {
-
-    }
-
     public function assignPermissionToRole() {
 
     }
 
-    public function createRole() {
+    public function removePermissionsFromRole(string $permissionId, string $roleId) {
 
     }
-
 
 }
