@@ -11,12 +11,12 @@ class Identification
     private \PDO $db;
 
     public function __construct(IConnector $connector){
-        $this->_db = $connector::connect();
+        $this->db = $connector::connect();
     }
 
     public function identify(string $accountName) : array|false {
-        $query = ("SELECT * FROM user_accounts WHERE account_name = :accountName");
-        $stmt = $this->_db->prepare($query);
+        $query = ("SELECT * FROM user_accounts WHERE user_account_name = :accountName");
+        $stmt = $this->db->prepare($query);
         $stmt->execute(['accountName' => $accountName]);
         if ($stmt->rowCount() > 0) {
             return $stmt->fetch();

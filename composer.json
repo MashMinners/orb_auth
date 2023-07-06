@@ -6,12 +6,14 @@
     "license": "GPL-3.0-only",
     "autoload": {
         "psr-4": {
+            "ORB\\App\\": "src/App",
             "ORB\\Authentication\\": "src/Authentication",
             "ORB\\Authorization\\": "src/Authorization",
-            "ORB\\Identication\\": "src/Identification"
+            "ORB\\Identification\\": "src/Identification"
         }
     },
     "require": {
-        "f16inkin/orb-engine": "^1.0.0"
+        "f16inkin/orb-engine": "^1.0.0",
+        "firebase/php-jwt": "^6.8"
     }
 }

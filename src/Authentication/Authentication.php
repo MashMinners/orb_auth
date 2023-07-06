@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace ORB\Authentication;
 
 use Engine\Database\IConnector;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use ORB\Identification\Identification;
 
 class Authentication
@@ -28,13 +30,23 @@ class Authentication
         //Проверяем наличие учетной записи
         if ($credentials = $this->identification->identify($accountName)){
             //Если данные аутентификации (учетная запись, пароль) верны
-            if (password_verify($accountPassword, $credentials['account_password_hash'])){
+            if (password_verify($accountPassword, $credentials['user_account_password_hash'])){
 
                 /*
                  * Обновляем хэш пароля. Но это для усиленной авторизации. Каждый новый вход, это регенерация хэша
                  */
                 //$newPasswordHash = password_hash($userPassword, PASSWORD_BCRYPT);
                 //Добавляем его в БД вмест остарого (обновляем)
+                $key = 'Secret Key';
+                $payload = [
+                    'iss' => 'http://example.org',
+                    'aud' => 'http://example.com',
+                    'iat' => 1356999524,
+                    'nbf' => 1357000000
+                ];
+                $jwt = JWT::encode($payload, $key, 'HS256');
+                $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
+                return $decoded;
             }
         }
         /**
