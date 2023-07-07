@@ -49,8 +49,8 @@ class Authentication
                 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
                 return $decoded;*/
                 $key = 'Secret Key';
-                $jwt = JWT::encode([$credentials])
-                return ['accessToken' => ]
+                $jwt = JWT::encode([$credentials], new Key($key, 'HS256'));
+                return ['accessToken' => $jwt];
             }
         }
         /**
