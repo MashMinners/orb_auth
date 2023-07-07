@@ -9,6 +9,9 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use ORB\Identification\Identification;
 
+/**
+ * Этот класс не используется для проверки авторизации по JWT токенам, этим занимается класс AuthorizationMiddleware
+ */
 class Authentication
 {
     private \PDO $_db;
@@ -16,20 +19,18 @@ class Authentication
     public function __construct(IConnector $connector, private Identification $identification){
         $this->_db = $connector::connect();
     }
-
     /**
      * Проводим аутентификацию пользователя пр первичном входе в систему по паре имя пользователя, пароль
      * Метод используется когда пользователь делает первичную идентифкацию по паре логин и пароль и нужно его
      * аутентифицировать
      * После аутентификации возвращается пара из токенов access и refresh, по которым проходит авторизация и
      * дальнейшая работа в системе.
-     * Этот класс не используется для првоерки авторизации по JWT токенам, этим занимается класс AuthorizationMiddleware
      */
     public function authinticate(string $accountName, string $accountPassword){
 
         //Проверяем наличие учетной записи
         if ($credentials = $this->identification->identify($accountName)){
-            //Если данные аутентификации (учетная запись, пароль) верны
+            //Проверяем пароль
             if (password_verify($accountPassword, $credentials['user_account_password_hash'])){
 
                 /*
@@ -37,7 +38,7 @@ class Authentication
                  */
                 //$newPasswordHash = password_hash($userPassword, PASSWORD_BCRYPT);
                 //Добавляем его в БД вмест остарого (обновляем)
-                $key = 'Secret Key';
+                /*
                 $payload = [
                     'iss' => 'http://example.org',
                     'aud' => 'http://example.com',
@@ -46,7 +47,10 @@ class Authentication
                 ];
                 $jwt = JWT::encode($payload, $key, 'HS256');
                 $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-                return $decoded;
+                return $decoded;*/
+                $key = 'Secret Key';
+                $jwt = JWT::encode([$credentials])
+                return ['accessToken' => ]
             }
         }
         /**

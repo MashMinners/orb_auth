@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ORB\Authorization;
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -11,8 +13,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class AuthorizationMiddleware implements MiddlewareInterface
 {
-    private function refresh(string $access, string $refresh) : array {
 
+    private function refresh(string $access, string $refresh) : array {
+        $encodedAccessToken = '';
+        if ($encodedAccessToken === $refresh){
+
+        }
     }
 
 
@@ -22,7 +28,7 @@ class AuthorizationMiddleware implements MiddlewareInterface
          * Получает запрос
          * Взапросе передаются два токена refresh и access
          * Данный мидлвар расшифровывает access токен
-         * Если токен не расшифровывается, тоесть устарел или подмененная сигнатура, мидлвар отправляет оба токена
+         * Если токен не расшифровывается, тоесть устарел или подмененна сигнатура, мидлвар отправляет оба токена
          * в метод этого мидлвара refresh
          *
          * Метод рефрешь проводит валидацию связи между access и refresh токенами, если все ок то
@@ -81,5 +87,11 @@ class AuthorizationMiddleware implements MiddlewareInterface
          * оригинала не пройдет проверку в БД, так как злоумышленником будет получена
          * новая пара токенов и оригиналу придется перелогиниваться
          */
+        $secretKey = 'Secret Key';
+        $accessToken = '';
+        $refreshToken = '';
+        if(!$payload = JWT::decode($accessToken,new Key($secretKey, 'HS256'))) {
+            $this->refresh($accessToken, $refreshToken);
+        }
     }
 }
