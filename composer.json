@@ -14,6 +14,7 @@
     },
     "require": {
         "f16inkin/orb-engine": "^1.0.0",
-        "firebase/php-jwt": "^6.8"
+        "firebase/php-jwt": "^6.8",
+        "ext-pdo": "*"
     }
 }

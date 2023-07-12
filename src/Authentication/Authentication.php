@@ -6,7 +6,6 @@ namespace ORB\Authentication;
 
 use Engine\Database\IConnector;
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use ORB\Identification\Identification;
 
 /**
@@ -14,53 +13,77 @@ use ORB\Identification\Identification;
  */
 class Authentication
 {
-    private \PDO $_db;
+    private \PDO $db;
 
-    public function __construct(IConnector $connector, private Identification $identification){
-        $this->_db = $connector::connect();
+    public function __construct(IConnector $connector, private Identification $identification, private $algo = PASSWORD_BCRYPT, private $options = ['cost'=>6]){
+        $this->db = $connector::connect();
     }
+
+    private function rehash(string $password, string $accountId) {
+        $newHash = password_hash($password, $this->algo, $this->options);
+        //Обновить хаш в таблице БД
+        $query = ("UPDATE user_accounts SET user_account_password_hash = :newHash WHERE user_account_id = :accountId");
+        $stmt = $this->db->prepare($query);
+        $stmt->execute([
+            'newHash' => $newHash,
+            'accountId' => $accountId
+        ]);
+    }
+
+    private function getPayload() {
+        return [
+            'iss' => $_SERVER['HTTP_HOST'],
+            'aud' => $_SERVER['HTTP_HOST'],
+            'iat' => 1356999524,
+            'nbf' => 1357000001
+        ];
+    }
+
+    private function getSecretKey() {
+        return 'Secret Key';
+    }
+
+    private function setSecretKey() {
+
+    }
+
+    private function generateRefreshToken(string $accessToken) {
+        $refreshToken = 'refreshToken';
+        return $refreshToken;
+    }
+
+    private function generateAccessToken(array $data) {
+        $payload = $this->getPayload();
+        $payload['data'] = $data;
+        $key = $this->getSecretKey();
+        $accessToken = JWT::encode($payload, $key, 'HS256');
+        return $accessToken;
+    }
+
     /**
-     * Проводим аутентификацию пользователя пр первичном входе в систему по паре имя пользователя, пароль
-     * Метод используется когда пользователь делает первичную идентифкацию по паре логин и пароль и нужно его
-     * аутентифицировать
-     * После аутентификации возвращается пара из токенов access и refresh, по которым проходит авторизация и
-     * дальнейшая работа в системе.
+     * Проводим первичную аутентификацию пользователя по паре login/password
+     * Возвращает пару accessToken/refreshToken
      */
     public function authinticate(string $accountName, string $accountPassword){
-
         //Проверяем наличие учетной записи
         if ($credentials = $this->identification->identify($accountName)){
+            $passwordHash = $credentials['user_account_password_hash'];
+            $accountId = $credentials['user_account_id'];
             //Проверяем пароль
-            if (password_verify($accountPassword, $credentials['user_account_password_hash'])){
-
-                /*
-                 * Обновляем хэш пароля. Но это для усиленной авторизации. Каждый новый вход, это регенерация хэша
-                 */
-                //$newPasswordHash = password_hash($userPassword, PASSWORD_BCRYPT);
-                //Добавляем его в БД вмест остарого (обновляем)
-                /*
-                $payload = [
-                    'iss' => 'http://example.org',
-                    'aud' => 'http://example.com',
-                    'iat' => 1356999524,
-                    'nbf' => 1357000000
+            if (password_verify($accountPassword, $passwordHash)){
+                if (password_needs_rehash($passwordHash, $this->algo, $this->options)){
+                    $this->rehash($accountPassword, $accountId);
+                }
+                $accessToken = $this->generateAccessToken($credentials);
+                $refreshToken = $this->generateRefreshToken($accessToken);
+                return [
+                    'accessToken' => $accessToken,
+                    'refreshToken' => $refreshToken,
                 ];
-                $jwt = JWT::encode($payload, $key, 'HS256');
-                $decoded = JWT::decode($jwt, new Key($key, 'HS256'));
-                return $decoded;*/
-                $key = 'Secret Key';
-                $jwt = JWT::encode([$credentials], new Key($key, 'HS256'));
-                return ['accessToken' => $jwt];
             }
+            return 'Incorrect password';
         }
-        /**
-         * 1. Делаю запрос к БД на идентификацию
-         * 2.1 Если пользователь есть, то система сразу возвращает пару из имени и хэша этого пароля
-         * 2.2 Если пользователя нет тоесть индентификация вернула False, озвращаю объект с сообщением
-         * 3. Если пользователь есть сравниваю хэш введеного пароля с хэшем из БД
-         * 4.1 Если все ок, и если есть мидлвар авторизации он делает свое дело, тоесть ищет роли и права
-         * 4.2 Если хэши не совпадают верну сообщение об этом.
-         */
+        return 'User not found';
     }
 
 }
