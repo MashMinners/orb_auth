@@ -35,16 +35,27 @@ class Authentication
             'iss' => $_SERVER['HTTP_HOST'],
             'aud' => $_SERVER['HTTP_HOST'],
             'iat' => 1356999524,
-            'nbf' => 1357000001
+            'nbf' => 1357000007
         ];
     }
 
-    private function getSecretKey() {
-        return 'Secret Key';
+    private function getSecretKey(array $credentials) {
+        $secretKey = file_get_contents('storage/orb-auth-keys/'.$credentials['user_account_id']);
+        return $secretKey;
     }
 
-    private function setSecretKey() {
+    /**
+     * При аутентификации будет создаваться для каждого пользователя свой секретный ключ
+     * @return void
+     */
+    private function setSecretKey(array $credentials) {
+        $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+        $key = str_shuffle($permitted_chars);
 
+
+        $keyPath = 'storage/orb-auth-keys/'.$credentials['user_account_id'];
+        //$key = 'Secret Key for '. $credentials['user_account_name'];
+        file_put_contents($keyPath, $key);
     }
 
     private function generateRefreshToken(string $accessToken) {
@@ -52,10 +63,10 @@ class Authentication
         return $refreshToken;
     }
 
-    private function generateAccessToken(array $data) {
+    private function generateAccessToken(array $credentials) {
         $payload = $this->getPayload();
-        $payload['data'] = $data;
-        $key = $this->getSecretKey();
+        $payload['data'] = $credentials;
+        $key = $this->getSecretKey($credentials);
         $accessToken = JWT::encode($payload, $key, 'HS256');
         return $accessToken;
     }
@@ -74,6 +85,9 @@ class Authentication
                 if (password_needs_rehash($passwordHash, $this->algo, $this->options)){
                     $this->rehash($accountPassword, $accountId);
                 }
+                //Установим оригинальный секретный ключ для пользователя
+                //$this->setSecretKey($credentials);
+                //Генерируем токены
                 $accessToken = $this->generateAccessToken($credentials);
                 $refreshToken = $this->generateRefreshToken($accessToken);
                 return [
