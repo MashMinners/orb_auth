@@ -9,7 +9,8 @@
             "ORB\\App\\": "src/App",
             "ORB\\Authentication\\": "src/Authentication",
             "ORB\\Authorization\\": "src/Authorization",
-            "ORB\\Identification\\": "src/Identification"
+            "ORB\\Identification\\": "src/Identification",
+            "ORB\\Config\\": "src/Config"
         }
     },
     "require": {
