@@ -16,13 +16,7 @@ class Authentication
 {
     private \PDO $db;
 
-    public function __construct(
-        IConnector $connector,
-        private Identification $identification,
-        private Configurator $configurator,
-        //private $algo = PASSWORD_BCRYPT,
-        //private $options = ['cost'=>6],
-       ){
+    public function __construct(IConnector $connector, private Identification $identification, private Configurator $configurator,){
         $this->db = $connector::connect();
         $this->configurator->configure();
     }
@@ -71,10 +65,15 @@ class Authentication
     }
 
     /**
-     * Проводим первичную аутентификацию пользователя по паре login/password
-     * Возвращает пару accessToken/refreshToken
+     * Используется для того, чтобы определить подошла ли пара логин и пароль для входа в систему
+     * Далее там где метод был вызван происходят уже другие события:
+     * либо это генерация токена, либо это создание сессии и запись данных в нее
+     * @param string $accountName
+     * @param string $accountPassword
+     * @param bool $hard
+     * @return bool
      */
-    public function authinticate(string $accountName, string $accountPassword, bool $hard = false){
+    public function authinticate(string $accountName, string $accountPassword, bool $hard = false) : bool {
         //Проверяем наличие учетной записи
         if ($credentials = $this->identification->identify($accountName)){
             $passwordHash = $credentials['user_account_password_hash'];
@@ -86,7 +85,7 @@ class Authentication
                     $credentials['user_account_password_hash'] = $this->rehash($accountPassword, $accountId, $hashParams);
                 }
                 /**
-                 * Установим оригинальный секретный ключ для пользователя, при каждой аутентификации
+                 * Установим оригинальный секретный ключ для пользователя, при усиленной аутентификации
                  * Тоесть каждый раз когда пользователь делает логин, генерируется на него случайный секретный ключ
                  * Если украдут токены, пользователь вынужден будет заного войти в систему по окнчанию своего access token'a,
                  * так как его refresh токен будет заменен злоумышленником, и если будет скомпроментирован секретный ключ
@@ -97,17 +96,17 @@ class Authentication
                 if ($hard){
                     $this->setSecretKey($credentials);
                 }
-                //Генерируем токены
-                $accessToken = $this->generateAccessToken($credentials);
-                $refreshToken = $this->generateRefreshToken($accessToken);
-                return [
-                    'accessToken' => $accessToken,
-                    'refreshToken' => $refreshToken,
-                ];
+                return true;
+                /**
+                 * Токены метод не должен возвращать, все что он должен возвращать это true/false об том
+                 * прошла ли аутентификация или нет на основе введеных данных и вернуть это в метод который
+                 * иницировал запрос, там уже в том методе возвращать либо ответ, либо инициировать генерацию токенов
+                 * или создавать сессию и записывать данные в нее и тд.
+                 */
             }
-            return 'Incorrect password';
+            return false;
         }
-        return 'User not found';
+        return false;
     }
 
 }
